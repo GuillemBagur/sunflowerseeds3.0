@@ -143,7 +143,6 @@ const saveOptions = (data) => {
       if (!Object.keys(newPair).length) return "";
       const key = Object.keys(newPair)[0];
       const newValue = newPair[key];
-      console.log(key);
       let newData = { ...prevData };
       newData[key] = newValue;
       return newData;
@@ -155,7 +154,6 @@ const saveOptions = (data) => {
     if (!checkKeyInOptions(key)) return;
     const newData = data[key];
     const action = actionPerKey[key];
-    console.log(key);
     if (action) {
       previousOptions[key] = action(previousOptions[key], newData);
       return;
@@ -224,15 +222,23 @@ const checkMajorChanges = (prevText, newText) => {
 /**
  * Generates an input for the options panel.
  * @param {string} type The input type we want to create.
- * @returns A string that is the whole HTML code to render the wanted input.
+ * @returns A string that is the whole HTML code to render the desired input.
  */
 const generateOptionsInput =
   (type) =>
-  ({ id, className, min = "", max = "" }) =>
-    `<input type="${type}" id="${id}" class="${className}" data-style="${id}" data-stylesufix="px" min="${min}" max="${max}" data-type="options" />`;
+  ({ id, className, min = "", max = "" }, sufix = "") =>
+    `<input type="${type}" id="${id}" class="${className}" data-style="${id}" data-stylesufix="${sufix}" min="${min}" max="${max}" data-type="options" />`;
 
-const generateSlider = (options) => generateOptionsInput("range")(options);
+const generateSlider = (options) =>
+  generateOptionsInput("range")(options, "px");
+const generateColorPicker = (options) => generateOptionsInput("color")(options);
+const generateLetterGetter = (options) => generateOptionsInput("text")(options);
 
+/**
+ * Generates a select for the options panel.
+ * @param {object} Options The HTML attributes that the select must have.
+ * @returns A string that is the whole HTML code to render a select.
+ */
 const generateOptionsSelect = ({ id, className, options = [] }) => {
   let optionsHTML = `<select id="${id}" class="${className}" data-style="${id}" data-type="options">`;
   for (let option of options) {
@@ -242,4 +248,40 @@ const generateOptionsSelect = ({ id, className, options = [] }) => {
 
   optionsHTML += `</select>`;
   return optionsHTML;
+};
+
+const generateLettersDump = (letters) => {
+  let lettersHTML = "";
+  for(let letter in letters) {
+    const color = letters[letter];
+    lettersHTML += `<button class="difficult-letters-dump__difficult-letter" style="color: '${color}'>${letters}</button>"`;
+  }
+
+  const result = `<div class="difficult-letters-dump">${lettersHTML}</div>`;
+  return result;
+}
+
+const generateLettersHighlighterInput = ({
+  id,
+  idInput,
+  idColorChooser,
+  idDump,
+  className,
+  letters = [],
+}) => {
+  let lettersHighlighterHTML = `<div id="${id}" class="${className}">`;
+  // Generate both HTML Inputs
+  // Generate the letters dump
+  lettersHighlighterHTML += generateLettersDump({
+    id: idDump,
+    letters: letters,
+  });
+
+  // Generate the letter input
+  lettersHighlighterHTML += generateLetterGetter({ id: idInput, maxLength: 1 });
+  lettersHighlighterHTML += generateColorPicker({ id: idColorChooser });
+
+  lettersHighlighterHTML += "</div>";
+
+  return lettersHighlighterHTML;
 };

@@ -46,31 +46,35 @@ const options = {
   },
 
   changeColors: {
-    backgroundColor: generateSlider({
-      id: "changeColors",
-      min: 10,
-      max: 30,
+    backgroundColor: generateColorPicker({
+      id: "backgroundColor",
       changeCSS: true,
     }),
-    color: generateSlider({
+    color: generateColorPicker({
       id: "color",
-      min: 10,
-      max: 30,
       changeCSS: true,
     }),
-    difficultLetters: generateSlider({
+    difficultLetters: generateLettersHighlighterInput({
       id: "difficultLetters",
-      min: 10,
-      max: 30,
+      idInput: "newDifficultLetter",
+      idColorChooser: "newDifficultLetterColor",
+      idDump: "difficultLettersDump",
+      className: "",
+      letters: [],
       changeCSS: true,
     }),
   },
 
   langAndAudio: {
-    lang: generateSlider({
+    lang: generateOptionsSelect({
       id: "lang",
-      min: 10,
-      max: 30,
+      className: "",
+      options: [
+        { text: "Català", value: "ca" },
+        { text: "Español", value: "es" },
+        { text: "English", value: "en" },
+        { text: "Suomi", value: "fi" },
+      ],
       changeCSS: true,
     }),
     voiceLang: generateSlider({
@@ -128,8 +132,12 @@ const renderOptions = () => {
   return html;
 };
 
+/**
+ * Changes (and saves) an option field from its HTML element.
+ * @param {HTML element} target The HTML input to get all the data from.
+ */
 const changeOptionByInput = (target) => {
-  if(!target) return;
+  if (!target) return;
   if (target.dataset.type !== "options") return;
   const styleToModify = target.dataset.style;
   sheetEl.style[styleToModify] = `${target.value}${
@@ -145,11 +153,14 @@ const optionsHandler = (e) => {
   changeOptionByInput(target);
 };
 
-
+/**
+ * Sets every input's value the value passed by param.
+ * @param {object} options All options object (key-value).
+ */
 const initOptionInputs = (options = {}) => {
   for (let option in options) {
     const el = document.querySelector(`#${option}[data-style="${option}"]`);
-    if(!el) continue;
+    if (!el) continue;
     const newValue = options[option];
     if (newValue) {
       el.value = newValue;
@@ -159,6 +170,9 @@ const initOptionInputs = (options = {}) => {
   }
 };
 
+/**
+ * Loads all the options from localStorage.
+ */
 const loadStyleOptions = () => {
   const loadedData = loadOptions();
   const loadedOptions = loadedData.options;

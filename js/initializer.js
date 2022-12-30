@@ -3,8 +3,7 @@
 const init = () => {
   sheetEl.addEventListener("keyup", sheetHandler);
   optionsSidebarEl.innerHTML = renderOptions();
-  optionsSidebarEl.addEventListener("pointermove", optionsHandler);
-  optionsSidebarEl.addEventListener("change", optionsHandler);
+  optionsSidebarEl.addEventListener("input", optionsHandler);
   loadStyleOptions();
 };
 
