@@ -4,6 +4,7 @@ const init = () => {
   sheetEl.addEventListener("keyup", sheetHandler);
   optionsSidebarEl.innerHTML = renderOptions();
   optionsSidebarEl.addEventListener("input", optionsHandler);
+  optionsSidebarEl.addEventListener("click", saveNewLetterToHighlight);
   loadStyleOptions();
 };
 

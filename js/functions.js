@@ -84,6 +84,7 @@ const createOptionsSchema = () => {
       highlightColor: "",
       automaticCorrection: "",
     },
+    "difficult-letters": {},
   };
 
   return schema;
@@ -145,6 +146,15 @@ const saveOptions = (data) => {
       const newValue = newPair[key];
       let newData = { ...prevData };
       newData[key] = newValue;
+      return newData;
+    },
+
+    "difficult-letters": (prevData, newLetter) => {
+      console.log(newLetter);
+      const letter = Object.keys(newLetter)[0];
+      const color = Object.values(newLetter)[0];
+      let newData = { ...prevData };
+      newData[letter] = color ?? "#000";
       return newData;
     },
   };
@@ -232,7 +242,6 @@ const generateOptionsInput =
 const generateSlider = (options) =>
   generateOptionsInput("range")(options, "px");
 const generateColorPicker = (options) => generateOptionsInput("color")(options);
-const generateLetterGetter = (options) => generateOptionsInput("text")(options);
 
 /**
  * Generates a select for the options panel.
@@ -250,25 +259,28 @@ const generateOptionsSelect = ({ id, className, options = [] }) => {
   return optionsHTML;
 };
 
-const generateLettersDump = (letters) => {
+const generateLetterGetter = (options) => generateOptionsSelect(options);
+
+const generateLettersDump = ({id, letters}) => {
+  console.log(letters);
   let lettersHTML = "";
-  for(let letter in letters) {
+  for (let letter in letters) {
     const color = letters[letter];
-    lettersHTML += `<button class="difficult-letters-dump__difficult-letter" style="color: '${color}'>${letters}</button>"`;
+    lettersHTML += `<li class="difficult-letters-dump__difficult-letter">${letter} <input type="color" data-type="difficult-letters" id="${letter}Highlight" value="${color}"><button>Eliminar</button></li>`;
   }
 
-  const result = `<div class="difficult-letters-dump">${lettersHTML}</div>`;
+  const result = `<ul id="${id}" class="difficult-letters-dump">${lettersHTML}</ul>`;
   return result;
-}
+};
 
 const generateLettersHighlighterInput = ({
   id,
   idInput,
-  idColorChooser,
   idDump,
   className,
   letters = [],
 }) => {
+  console.log(letters);
   let lettersHighlighterHTML = `<div id="${id}" class="${className}">`;
   // Generate both HTML Inputs
   // Generate the letters dump
@@ -278,8 +290,15 @@ const generateLettersHighlighterInput = ({
   });
 
   // Generate the letter input
-  lettersHighlighterHTML += generateLetterGetter({ id: idInput, maxLength: 1 });
-  lettersHighlighterHTML += generateColorPicker({ id: idColorChooser });
+  const alphabet = "abcdefghijklmnopqrstuvwxyz".split("");
+  const mappedAlphabet = alphabet.map((letter) => {
+    return { text: letter, value: letter };
+  }); // An alphabet with key value (to generate the select element).
+  lettersHighlighterHTML += generateLetterGetter({
+    id: idInput,
+    options: mappedAlphabet,
+  });
+  lettersHighlighterHTML += `<button id="addLetterToHighlight">Agregar letra</button>`;
 
   lettersHighlighterHTML += "</div>";
 
