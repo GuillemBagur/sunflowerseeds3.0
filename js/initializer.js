@@ -2,9 +2,12 @@
 
 const init = () => {
   sheetEl.addEventListener("keyup", sheetHandler);
-  optionsSidebarEl.innerHTML = renderOptions();
+  refreshOptionsPanel();
   optionsSidebarEl.addEventListener("input", optionsHandler);
-  optionsSidebarEl.addEventListener("click", saveNewLetterToHighlight);
+  optionsSidebarEl.addEventListener("click", ({target}) => {
+    saveNewLetterToHighlight(target);
+    deleteHighlightedLetter(target);
+  });
   loadStyleOptions();
 };
 

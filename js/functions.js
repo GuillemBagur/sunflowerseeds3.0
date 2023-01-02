@@ -123,7 +123,7 @@ const loadOptions = () => {
  * Save data into the localStorage options key.
  * @param {object} data A key-value structure of new data to save into the localStorage.
  */
-const saveOptions = (data) => {
+const saveOptions = (data, remove = false) => {
   // Load the previous data from LocalStorage
   let previousOptions = loadOptions();
 
@@ -149,11 +149,15 @@ const saveOptions = (data) => {
       return newData;
     },
 
-    "difficult-letters": (prevData, newLetter) => {
-      console.log(newLetter);
+    "difficult-letters": (prevData, newLetter, remove) => {
       const letter = Object.keys(newLetter)[0];
       const color = Object.values(newLetter)[0];
       let newData = { ...prevData };
+      if (remove) {
+        delete newData[letter];
+        return newData;
+      }
+
       newData[letter] = color ?? "#000";
       return newData;
     },
@@ -165,7 +169,7 @@ const saveOptions = (data) => {
     const newData = data[key];
     const action = actionPerKey[key];
     if (action) {
-      previousOptions[key] = action(previousOptions[key], newData);
+      previousOptions[key] = action(previousOptions[key], newData, remove);
       return;
     }
 
@@ -249,7 +253,7 @@ const generateColorPicker = (options) => generateOptionsInput("color")(options);
  * @returns A string that is the whole HTML code to render a select.
  */
 const generateOptionsSelect = ({ id, className, options = [] }) => {
-  let optionsHTML = `<select id="${id}" class="${className}" data-style="${id}" data-type="options">`;
+  let optionsHTML = `<select id="${id}" class="${className}" value="" data-style="${id}" data-type="options">`;
   for (let option of options) {
     const optionHTML = `<option value="${option.value}">${option.text}</option>`;
     optionsHTML += optionHTML;
@@ -261,12 +265,11 @@ const generateOptionsSelect = ({ id, className, options = [] }) => {
 
 const generateLetterGetter = (options) => generateOptionsSelect(options);
 
-const generateLettersDump = ({id, letters}) => {
-  console.log(letters);
+const generateLettersDump = ({ id, letters }) => {
   let lettersHTML = "";
   for (let letter in letters) {
     const color = letters[letter];
-    lettersHTML += `<li class="difficult-letters-dump__difficult-letter">${letter} <input type="color" data-type="difficult-letters" id="${letter}Highlight" value="${color}"><button>Eliminar</button></li>`;
+    lettersHTML += `<li class="difficult-letters-dump__difficult-letter">${letter} <input type="color" data-type="difficult-letters" data-letter="${letter}" value="${color}"><button data-type="deleteHighlightedLetter" data-letter="${letter}">Eliminar</button></li>`;
   }
 
   const result = `<ul id="${id}" class="difficult-letters-dump">${lettersHTML}</ul>`;
@@ -280,7 +283,6 @@ const generateLettersHighlighterInput = ({
   className,
   letters = [],
 }) => {
-  console.log(letters);
   let lettersHighlighterHTML = `<div id="${id}" class="${className}">`;
   // Generate both HTML Inputs
   // Generate the letters dump
@@ -304,3 +306,26 @@ const generateLettersHighlighterInput = ({
 
   return lettersHighlighterHTML;
 };
+
+/**
+ * Generates a popup.
+ * @param {string} type The type of the popup (prompt, confirm or alert, just as vanilla JS).  
+ * @returns A function that generates the desired popup (provisionally, it returns the classical JS built-in functions).
+ */
+const generatePopup = (type) => {
+  if(type === "prompt") return prompt;
+  if(type === "confirm") return confirm;
+  return alert;
+}
+
+/**
+ * Generates a popup and (optionally) executes a function with the values submitted by the user.
+ * @param {string} type The type of the popup that we want to create. It can be: prompt, confirm or alert (default).
+ * @param {string} msg The message we want the popup to contain.
+ * @param {function} cb The callback to execute after the popup disappears. It can handle with the poupup's response.
+ * @returns The value returned by the callback.
+ */
+const popup = (type, msg, cb = () => true) => {
+  const response = generatePopup(type)(msg);
+  return cb(response);
+}
